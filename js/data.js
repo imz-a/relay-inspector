@@ -5,41 +5,84 @@
  *  - Bruckner《One Token Is Enough》(arXiv 2606.04101, 2026-07)
  *  - tokwhois v1.1 tokenizer 目录 (2026-08-27, Apache-2.0)
  *  - TSecurity 五信号检测法 / XTokenChecker / Relaylens
- *  - LiveBench / SWE-bench / SuperCLUE / OpenCompass 公开榜单 (2026-10)
- * 注意：部分历史/小模型分数为社区估算值，已标注 est。
+ *  - LiveBench 2.0 官方榜单 (livebench.ai, Release 2026-10-14) — 现行主口径
+ *  - LiveBench 旧版 / SuperCLUE / OpenCompass 公开榜单 (2026-09 及更早快照)
+ *  - 厂商官方定价页 / OpenRouter / Artificial Analysis (2026-10)
+ * 注意：标注 est 的分数或价格为社区估算值；2026-10-14 之前发布的旧模型
+ * 保留其在旧榜快照中的分数（新榜未收录），比较时以同口径为准。
  * ============================================================ */
 window.MT = window.MT || {};
 
 /* ---------- 1. 官方模型基线库 ---------- */
 /* tier: flagship(旗舰) / pro(高端) / mini(轻量) / legacy(过时) */
 MT.MODELS = [
-  { id:'gpt-5.5',        name:'GPT-5.5',            vendor:'OpenAI',    livebench:81.3, swe:88.7, ctx:'1.1M', cutoff:'2026-02', tok:'o200k_base', tier:'flagship', priceIn:1.25, priceOut:30.0, latency:'medium', note:'LiveBench 榜首，SWE-bench Verified 88.7%' },
-  { id:'gpt-5.4',        name:'GPT-5.4',            vendor:'OpenAI',    livebench:80.9, swe:59.1, ctx:'1.1M', cutoff:'2026-01', tok:'o200k_base', tier:'flagship', priceIn:1.25, priceOut:15.0, latency:'medium', note:'SWE-bench Pro 59.1%' },
-  { id:'gpt-5.2',        name:'GPT-5.2',            vendor:'OpenAI',    livebench:75.4, swe:80.0, ctx:'400K', cutoff:'2025-10', tok:'o200k_base', tier:'pro',      priceIn:1.25, priceOut:14.0, latency:'medium', note:'' },
-  { id:'gpt-5.1',        name:'GPT-5.1',            vendor:'OpenAI',    livebench:72.6, swe:null, ctx:'400K', cutoff:'2025-08', tok:'o200k_base', tier:'pro',      priceIn:1.25, priceOut:10.0, latency:'medium', note:'' },
-  { id:'gpt-4o',         name:'GPT-4o',             vendor:'OpenAI',    livebench:57.0, swe:33.0, ctx:'128K', cutoff:'2023-10', tok:'o200k_base', tier:'legacy',   priceIn:2.5,  priceOut:10.0, latency:'fast',    note:'历史值；2024-10 曾为业界标杆', est:true },
-  { id:'gpt-3.5-turbo',  name:'GPT-3.5 Turbo',      vendor:'OpenAI',    livebench:38.0, swe:null, ctx:'16K',  cutoff:'2021-09', tok:'cl100k_base', tier:'legacy',  priceIn:0.5,  priceOut:1.5,  latency:'fast',    note:'历史估算值', est:true },
-  { id:'claude-opus-4.8',name:'Claude Opus 4.8',    vendor:'Anthropic', livebench:79.5, swe:null, ctx:'1M',   cutoff:'2026-03', tok:'proprietary', tier:'flagship', priceIn:15.0, priceOut:25.0, latency:'medium', note:'Thinking 版本；CISPA 审计中最常被仿冒的对象' },
-  { id:'claude-opus-4.7',name:'Claude Opus 4.7',    vendor:'Anthropic', livebench:77.1, swe:87.6, ctx:'1M',   cutoff:'2026-01', tok:'proprietary', tier:'flagship', priceIn:15.0, priceOut:25.0, latency:'medium', note:'SWE-bench Pro 64.3%' },
-  { id:'claude-opus-4.5',name:'Claude Opus 4.5',    vendor:'Anthropic', livebench:76.0, swe:80.9, ctx:'200K', cutoff:'2025-07', tok:'proprietary', tier:'flagship', priceIn:5.0,  priceOut:25.0, latency:'medium', note:'' },
-  { id:'claude-sonnet-4.6',name:'Claude Sonnet 4.6',vendor:'Anthropic', livebench:75.7, swe:79.6, ctx:'1M',   cutoff:'2025-11', tok:'proprietary', tier:'pro',      priceIn:3.0,  priceOut:15.0, latency:'medium', note:'常被用来冒充 Opus（静默降级模式）' },
-  { id:'claude-fable-5', name:'Claude Fable 5',     vendor:'Anthropic', livebench:78.6, swe:null, ctx:'1M',   cutoff:'2026-04', tok:'proprietary', tier:'flagship', priceIn:5.0,  priceOut:50.0, latency:'medium', note:'' },
-  { id:'gemini-3.1-pro', name:'Gemini 3.1 Pro',     vendor:'Google',    livebench:80.7, swe:80.6, ctx:'1M',   cutoff:'2026-01', tok:'proprietary', tier:'flagship', priceIn:2.5,  priceOut:12.0, latency:'medium', note:'' },
-  { id:'gemini-3.5-flash',name:'Gemini 3.5 Flash',  vendor:'Google',    livebench:75.8, swe:78.0, ctx:'1M',   cutoff:'2026-03', tok:'proprietary', tier:'pro',      priceIn:0.3,  priceOut:9.0,  latency:'fast',    note:'' },
-  { id:'qwen3.8-max',    name:'Qwen3.8-Max',        vendor:'阿里',       livebench:73.0, swe:null, ctx:'1M',   cutoff:'2026-05', tok:'qwen-class',  tier:'flagship', priceIn:1.6,  priceOut:6.4,  latency:'fast',    note:'SuperCLUE 72.62（2026-09）' },
-  { id:'qwen3.7-max',    name:'Qwen3.7-Max',        vendor:'阿里',       livebench:75.2, swe:null, ctx:'1M',   cutoff:'2026-04', tok:'qwen-class',  tier:'flagship', priceIn:1.6,  priceOut:6.4,  latency:'fast',    note:'' },
-  { id:'deepseek-v4-pro',name:'DeepSeek-V4-Pro',    vendor:'深度求索',   livebench:74.4, swe:80.6, ctx:'1M',   cutoff:'2026-02', tok:'deepseek-class', tier:'flagship', priceIn:0.27, priceOut:1.1, latency:'medium', note:'高性价比；中转站常见"平替"目标' },
-  { id:'deepseek-v4.1-flash',name:'DeepSeek-V4.1-Flash',vendor:'深度求索',livebench:71.0, swe:79.0, ctx:'1M',  cutoff:'2026-06', tok:'deepseek-class', tier:'pro',   priceIn:0.07, priceOut:0.28, latency:'fast',  note:'SuperCLUE 71.81（2026-09）' },
-  { id:'glm-5.3',        name:'GLM-5.3',            vendor:'智谱',       livebench:73.0, swe:null, ctx:'1M',   cutoff:'2026-06', tok:'glm-class',   tier:'flagship', priceIn:0.6,  priceOut:2.2,  latency:'fast',    note:'SuperCLUE 71.29（2026-09）' },
-  { id:'glm-5.2',        name:'GLM-5.2',            vendor:'智谱',       livebench:73.2, swe:null, ctx:'1M',   cutoff:'2026-03', tok:'glm-class',   tier:'flagship', priceIn:0.6,  priceOut:2.42, latency:'fast',    note:'' },
-  { id:'glm-4-9b',       name:'GLM-4-9B',           vendor:'智谱',       livebench:40.0, swe:null, ctx:'128K', cutoff:'2024-05', tok:'glm-class',   tier:'mini',     priceIn:0.05, priceOut:0.15, latency:'fast',    note:'CISPA 案例：冒充 GPT-5 的热门后端', est:true },
-  { id:'kimi-k2.6',      name:'Kimi K2.6',          vendor:'月之暗面',   livebench:72.4, swe:80.2, ctx:'262K', cutoff:'2026-02', tok:'deepseek-class', tier:'flagship', priceIn:0.6, priceOut:2.5, latency:'medium', note:'' },
-  { id:'kimi-k3',        name:'Kimi K3',            vendor:'月之暗面',   livebench:70.7, swe:null, ctx:'256K', cutoff:'2026-07', tok:'deepseek-class', tier:'flagship', priceIn:0.6, priceOut:2.5, latency:'medium', note:'SuperCLUE 70.68（2026-08）' },
-  { id:'grok-4.20',      name:'Grok 4.20',          vendor:'xAI',        livebench:69.0, swe:null, ctx:'1M',   cutoff:'2025-11', tok:'proprietary', tier:'pro',      priceIn:3.0,  priceOut:15.0, latency:'medium', note:'' },
-  { id:'minimax-m3',     name:'MiniMax M3',         vendor:'MiniMax',   livebench:70.0, swe:null, ctx:'512K', cutoff:'2026-03', tok:'proprietary', tier:'pro',      priceIn:0.3,  priceOut:1.2,  latency:'medium', note:'' },
-  { id:'doubao-seed-2.0-pro',name:'豆包 Seed 2.0 Pro',vendor:'字节',     livebench:63.5, swe:null, ctx:'256K', cutoff:'2026-01', tok:'proprietary', tier:'pro',      priceIn:0.3,  priceOut:0.9,  latency:'fast',    note:'OpenCompass 63.5' },
-  { id:'qwen2.5-72b',    name:'Qwen2.5-72B',        vendor:'阿里',       livebench:48.0, swe:null, ctx:'128K', cutoff:'2024-06', tok:'qwen-class',  tier:'mini',     priceIn:0.35, priceOut:0.4,  latency:'fast',    note:'开源模型，常见冒充后端', est:true },
-  { id:'llama-3.3-70b',  name:'Llama 3.3 70B',      vendor:'Meta',       livebench:52.0, swe:null, ctx:'128K', cutoff:'2023-12', tok:'llama-class', tier:'mini',     priceIn:0.23, priceOut:0.4,  latency:'fast',    note:'随机数指纹偏爱 53', est:true }
+  /* ===== 2026-09/10 最新旗舰（LiveBench 2.0, 2026-10-14） ===== */
+  { id:'claude-fable-5.1', name:'Claude Fable 5.1',   vendor:'Anthropic', livebench:88.0, swe:null, ctx:'1M',   cutoff:'2026-08', tok:'proprietary', tier:'flagship', priceIn:10.0, priceOut:50.0, latency:'medium', note:'LiveBench 2.0 榜首（2026-10-14）；Coding 97.7 / Browser Use 100' },
+  { id:'claude-opus-5.5',  name:'Claude Opus 5.5',    vendor:'Anthropic', livebench:86.5, swe:null, ctx:'1M',   cutoff:'2026-07', tok:'proprietary', tier:'flagship', priceIn:4.0,  priceOut:20.0, latency:'medium', note:'2026-09-22 GA；Terminal-Bench 4.0 66.4%；AA 智能指数最高公开模型', est:true },
+  { id:'gpt-6-astra',      name:'GPT-6 Astra',        vendor:'OpenAI',    livebench:86.1, swe:null, ctx:'1.05M',cutoff:'2026-06', tok:'o200k_base',  tier:'flagship', priceIn:10.0, priceOut:50.0, latency:'medium', note:'2026-09-03 GA；FrontierSWE v2 65.5% / Terminal-Bench Science 68.1%' },
+  { id:'gpt-6.1-sol',      name:'GPT-6.1 Sol',        vendor:'OpenAI',    livebench:85.4, swe:null, ctx:'1M',   cutoff:'2026-08', tok:'o200k_base',  tier:'flagship', priceIn:2.0,  priceOut:10.0, latency:'medium', note:'性价比突出的 GPT-6 系列型号', est:true },
+  { id:'gemini-4-argon',   name:'Gemini 4 Argon',     vendor:'Google',    livebench:84.1, swe:null, ctx:'1M',   cutoff:'2026-08', tok:'proprietary', tier:'flagship', priceIn:4.0,  priceOut:20.0, latency:'medium', note:'2026-09-30 发布；初期仅 Fairwind 安全计划开放；DeepSWE 77.9%', est:true },
+  { id:'claude-sonnet-5.5',name:'Claude Sonnet 5.5',  vendor:'Anthropic', livebench:82.5, swe:null, ctx:'1M',   cutoff:'2026-08', tok:'proprietary', tier:'flagship', priceIn:3.0,  priceOut:15.0, latency:'medium', note:'Opus 之下主力型号；常被用来冒充 Opus 5.5', est:true },
+  { id:'claude-opus-5',    name:'Claude Opus 5',      vendor:'Anthropic', livebench:82.1, swe:null, ctx:'1M',   cutoff:'2026-07', tok:'proprietary', tier:'flagship', priceIn:4.0,  priceOut:20.0, latency:'medium', note:'2026 年中旗舰；medium effort 为默认档', est:true },
+  { id:'gpt-6-sol',        name:'GPT-6 Sol',          vendor:'OpenAI',    livebench:81.9, swe:null, ctx:'1M',   cutoff:'2026-07', tok:'o200k_base',  tier:'flagship', priceIn:5.0,  priceOut:25.0, latency:'medium', note:'GPT-6 标准版', est:true },
+  { id:'muse-wonder-1.0',  name:'Muse Wonder 1.0',    vendor:'Meta',      livebench:78.1, swe:null, ctx:'1M',   cutoff:'2026-09', tok:'llama-class', tier:'flagship', priceIn:2.0,  priceOut:10.0, latency:'medium', note:'Meta 闭源旗舰；MCP-Atlas 工具调用第一梯队', est:true },
+  { id:'gpt-5.6-sol',      name:'GPT-5.6 Sol',        vendor:'OpenAI',    livebench:76.3, swe:null, ctx:'400K', cutoff:'2026-06', tok:'o200k_base',  tier:'pro',      priceIn:2.0,  priceOut:10.0, latency:'medium', note:'', est:true },
+  { id:'gpt-5.6-terra',    name:'GPT-5.6 Terra',      vendor:'OpenAI',    livebench:75.0, swe:null, ctx:'400K', cutoff:'2026-06', tok:'o200k_base',  tier:'pro',      priceIn:1.25, priceOut:10.0, latency:'medium', note:'', est:true },
+  { id:'muse-spark-1.3',   name:'Muse Spark 1.3',     vendor:'Meta',      livebench:74.9, swe:null, ctx:'1M',   cutoff:'2026-08', tok:'llama-class', tier:'pro',      priceIn:1.25, priceOut:4.25, latency:'medium', note:'开源前的主力闭源版；Terminal-Bench 2.1 90.2' },
+  { id:'mimo-v2.6-pro',    name:'MiMo V2.6 Pro',      vendor:'小米',      livebench:74.9, swe:null, ctx:'1.05M',cutoff:'2026-09', tok:'proprietary', tier:'pro',      priceIn:0.43, priceOut:0.87, latency:'fast',    note:'AA 开源模型智能指数第一（46 分）；极致性价比' },
+  { id:'grok-4.6',         name:'Grok 4.6',           vendor:'xAI',       livebench:74.6, swe:null, ctx:'1M',   cutoff:'2026-08', tok:'proprietary', tier:'pro',      priceIn:3.0,  priceOut:15.0, latency:'medium', note:'', est:true },
+  { id:'claude-sonnet-5',  name:'Claude Sonnet 5',    vendor:'Anthropic', livebench:74.6, swe:null, ctx:'1M',   cutoff:'2026-09', tok:'proprietary', tier:'pro',      priceIn:3.0,  priceOut:15.0, latency:'medium', note:'', est:true },
+  { id:'claude-haiku-5.5', name:'Claude Haiku 5.5',   vendor:'Anthropic', livebench:74.5, swe:null, ctx:'1M',   cutoff:'2026-09', tok:'proprietary', tier:'pro',      priceIn:1.0,  priceOut:5.0,  latency:'fast',    note:'轻量档意外能打；中转站常见平替目标', est:true },
+  { id:'grok-4.7',         name:'Grok 4.7',           vendor:'xAI',       livebench:74.1, swe:null, ctx:'1M',   cutoff:'2026-09', tok:'proprietary', tier:'pro',      priceIn:3.0,  priceOut:15.0, latency:'medium', note:'', est:true },
+  { id:'glm-5.3-flash',    name:'GLM-5.3 Flash',      vendor:'智谱',      livebench:70.6, swe:null, ctx:'1M',   cutoff:'2026-06', tok:'glm-class',   tier:'pro',      priceIn:0.1,  priceOut:0.4,  latency:'fast',    note:'开源；GLM-5.3 轻量版', est:true },
+  { id:'grok-4.5',         name:'Grok 4.5',           vendor:'xAI',       livebench:70.1, swe:null, ctx:'1M',   cutoff:'2026-07', tok:'proprietary', tier:'pro',      priceIn:3.0,  priceOut:15.0, latency:'medium', note:'', est:true },
+  { id:'gpt-6-luna',       name:'GPT-6 Luna',         vendor:'OpenAI',    livebench:69.4, swe:null, ctx:'400K', cutoff:'2026-08', tok:'o200k_base',  tier:'pro',      priceIn:0.5,  priceOut:2.0,  latency:'fast',    note:'低成本档；中转站常见平替目标', est:true },
+  { id:'qwen3.8-flash',    name:'Qwen3.8 Flash',      vendor:'阿里',      livebench:68.8, swe:null, ctx:'1M',   cutoff:'2026-08', tok:'qwen-class',  tier:'pro',      priceIn:0.2,  priceOut:0.8,  latency:'fast',    note:'开源；SuperCLUE 71.81（2026-09）', est:true },
+  { id:'gemini-3.8-flash', name:'Gemini 3.8 Flash',   vendor:'Google',    livebench:67.3, swe:null, ctx:'1M',   cutoff:'2026-08', tok:'proprietary', tier:'pro',      priceIn:0.3,  priceOut:9.0,  latency:'fast',    note:'', est:true },
+  { id:'gemini-3.7-flash', name:'Gemini 3.7 Flash',   vendor:'Google',    livebench:67.2, swe:null, ctx:'1M',   cutoff:'2026-07', tok:'proprietary', tier:'pro',      priceIn:0.3,  priceOut:9.0,  latency:'fast',    note:'', est:true },
+  { id:'gpt-5.6-luna',     name:'GPT-5.6 Luna',       vendor:'OpenAI',    livebench:66.1, swe:null, ctx:'400K', cutoff:'2026-06', tok:'o200k_base',  tier:'pro',      priceIn:0.5,  priceOut:2.0,  latency:'fast',    note:'', est:true },
+  { id:'deepseek-v4-flash-vision',name:'DeepSeek V4 Flash Vision',vendor:'深度求索',livebench:63.6,swe:null,ctx:'1M',cutoff:'2026-05',tok:'deepseek-class',tier:'pro',priceIn:0.07,priceOut:0.28,latency:'fast',note:'开源；多模态版', est:true },
+  { id:'qwen3.8-27b',      name:'Qwen3.8 27B',        vendor:'阿里',      livebench:62.7, swe:null, ctx:'262K', cutoff:'2026-08', tok:'qwen-class',  tier:'pro',      priceIn:0.2,  priceOut:0.8,  latency:'fast',    note:'开源小钢炮；中转站常见冒充后端', est:true },
+  { id:'step-5',           name:'Step 5 (Preview)',   vendor:'阶跃星辰',  livebench:62.0, swe:null, ctx:'256K', cutoff:'2026-09', tok:'proprietary', tier:'pro',      priceIn:1.0,  priceOut:4.0,  latency:'medium', note:'阶跃星辰旗舰；多模态强项', est:true },
+  { id:'muse-spark-1.2',   name:'Muse Spark 1.2',     vendor:'Meta',      livebench:61.8, swe:null, ctx:'1M',   cutoff:'2026-08', tok:'llama-class', tier:'pro',      priceIn:1.25, priceOut:4.25, latency:'medium', note:'', est:true },
+  { id:'muse-spark-open',  name:'Muse Spark Open',    vendor:'Meta',      livebench:57.6, swe:null, ctx:'1M',   cutoff:'2026-10', tok:'llama-class', tier:'pro',      priceIn:1.0,  priceOut:4.0,  latency:'medium', note:'2026-10-16 开源；4bit 约 493GB，双 M5 Ultra 可本地运行', est:true },
+  { id:'nemotron-3.5-super-vl',name:'Nemotron 3.5 Super VL',vendor:'NVIDIA',livebench:51.5,swe:null,ctx:'128K',cutoff:'2026-08',tok:'llama-class',tier:'pro',  priceIn:0.5,  priceOut:2.0,  latency:'medium', note:'NVIDIA 企业级；视觉语言版', est:true },
+  { id:'mistral-large-4',  name:'Mistral Large 4',    vendor:'Mistral',   livebench:47.7, swe:null, ctx:'256K', cutoff:'2026-06', tok:'proprietary', tier:'pro',      priceIn:2.0,  priceOut:6.0,  latency:'medium', note:'', est:true },
+  { id:'gemma-4-31b',      name:'Gemma 4 31B',        vendor:'Google',    livebench:41.5, swe:null, ctx:'128K', cutoff:'2026-09', tok:'proprietary', tier:'mini',     priceIn:0.1,  priceOut:0.4,  latency:'fast',    note:'开源；Google 开源线旗舰', est:true },
+  { id:'nemotron-3-ultra', name:'Nemotron 3 Ultra',   vendor:'NVIDIA',    livebench:40.8, swe:null, ctx:'128K', cutoff:'2026-08', tok:'llama-class', tier:'mini',     priceIn:0.5,  priceOut:2.0,  latency:'medium', note:'', est:true },
+  { id:'nemotron-3.5-lightning',name:'Nemotron 3.5 Lightning',vendor:'NVIDIA',livebench:28.7,swe:null,ctx:'128K',cutoff:'2026-08',tok:'llama-class',tier:'mini',  priceIn:0.1,  priceOut:0.4,  latency:'fast',    note:'极速轻量档', est:true },
+
+  /* ===== 2026-10 仍在服务的主流型号（分数已同步 LiveBench 2.0） ===== */
+  { id:'claude-opus-4.8',  name:'Claude Opus 4.8',    vendor:'Anthropic', livebench:76.8, swe:null, ctx:'1M',   cutoff:'2026-03', tok:'proprietary', tier:'flagship', priceIn:4.0,  priceOut:20.0, latency:'medium', note:'2026-09-22 起官方降价 20%；CISPA 审计中最常被仿冒的对象' },
+  { id:'deepseek-v4.1-flash',name:'DeepSeek-V4.1-Flash',vendor:'深度求索',livebench:76.8, swe:null, ctx:'1M',   cutoff:'2026-06', tok:'deepseek-class', tier:'flagship', priceIn:0.07, priceOut:0.28, latency:'fast',  note:'开源；性价比之王；中转站头号平替目标' },
+  { id:'gpt-5.5',          name:'GPT-5.5',            vendor:'OpenAI',    livebench:68.7, swe:88.7, ctx:'1.1M', cutoff:'2026-02', tok:'o200k_base',  tier:'flagship', priceIn:1.25, priceOut:30.0, latency:'medium', note:'旧榜榜首（81.3）；Terminal-Bench 2 82.7%' },
+  { id:'claude-sonnet-4.6',name:'Claude Sonnet 4.6',  vendor:'Anthropic', livebench:65.1, swe:79.6, ctx:'1M',   cutoff:'2025-11', tok:'proprietary', tier:'pro',      priceIn:3.0,  priceOut:15.0, latency:'medium', note:'常被用来冒充 Opus（静默降级模式）' },
+  { id:'qwen3.8-max',      name:'Qwen3.8-Max',        vendor:'阿里',       livebench:64.2, swe:null, ctx:'1M',   cutoff:'2026-05', tok:'qwen-class',  tier:'flagship', priceIn:1.6,  priceOut:6.4,  latency:'fast',    note:'SuperCLUE 72.62（2026-09）' },
+  { id:'kimi-k3',          name:'Kimi K3',            vendor:'月之暗面',  livebench:63.4, swe:null, ctx:'256K', cutoff:'2026-07', tok:'deepseek-class', tier:'flagship', priceIn:0.6, priceOut:2.5, latency:'medium', note:'开源；Terminal-Bench 2.1 85.0' },
+  { id:'gemini-3.1-pro',   name:'Gemini 3.1 Pro',     vendor:'Google',    livebench:54.9, swe:80.6, ctx:'1M',   cutoff:'2026-01', tok:'proprietary', tier:'flagship', priceIn:2.5,  priceOut:12.0, latency:'medium', note:'旧榜 80.7；多模态与长上下文强项' },
+  { id:'minimax-m3',       name:'MiniMax M3',         vendor:'MiniMax',   livebench:53.7, swe:null, ctx:'512K', cutoff:'2026-03', tok:'proprietary', tier:'pro',      priceIn:0.3,  priceOut:1.2,  latency:'medium', note:'开源；视频生成同门模型' },
+  { id:'claude-fable-5',   name:'Claude Fable 5',     vendor:'Anthropic', livebench:83.6, swe:null, ctx:'1M',   cutoff:'2026-04', tok:'proprietary', tier:'flagship', priceIn:5.0,  priceOut:50.0, latency:'medium', note:'被 Fable 5.1 接替；API 仍在线' },
+  { id:'gpt-5.4',          name:'GPT-5.4',            vendor:'OpenAI',    livebench:80.9, swe:59.1, ctx:'1.1M', cutoff:'2026-01', tok:'o200k_base',  tier:'flagship', priceIn:1.25, priceOut:15.0, latency:'medium', note:'旧榜第 2；SWE-bench Pro 59.1%' },
+  { id:'claude-opus-4.7',  name:'Claude Opus 4.7',    vendor:'Anthropic', livebench:77.1, swe:87.6, ctx:'1M',   cutoff:'2026-01', tok:'proprietary', tier:'flagship', priceIn:15.0, priceOut:25.0, latency:'medium', note:'SWE-bench Pro 64.3%' },
+  { id:'claude-opus-4.5',  name:'Claude Opus 4.5',    vendor:'Anthropic', livebench:76.0, swe:80.9, ctx:'200K', cutoff:'2025-07', tok:'proprietary', tier:'flagship', priceIn:5.0,  priceOut:25.0, latency:'medium', note:'' },
+  { id:'gemini-3.5-flash', name:'Gemini 3.5 Flash',   vendor:'Google',    livebench:75.8, swe:78.0, ctx:'1M',   cutoff:'2026-03', tok:'proprietary', tier:'pro',      priceIn:0.3,  priceOut:9.0,  latency:'fast',    note:'旧榜快照；已被 3.7/3.8 Flash 接替' },
+  { id:'gpt-5.2',          name:'GPT-5.2',            vendor:'OpenAI',    livebench:75.4, swe:80.0, ctx:'400K', cutoff:'2025-10', tok:'o200k_base',  tier:'pro',      priceIn:1.25, priceOut:14.0, latency:'medium', note:'' },
+  { id:'qwen3.7-max',      name:'Qwen3.7-Max',        vendor:'阿里',       livebench:75.2, swe:null, ctx:'1M',   cutoff:'2026-04', tok:'qwen-class',  tier:'flagship', priceIn:1.6,  priceOut:6.4,  latency:'fast',    note:'旧榜快照；已被 3.8-Max 接替' },
+  { id:'deepseek-v4-pro',  name:'DeepSeek-V4-Pro',    vendor:'深度求索',  livebench:74.4, swe:80.6, ctx:'1M',   cutoff:'2026-02', tok:'deepseek-class', tier:'flagship', priceIn:0.27, priceOut:1.1, latency:'medium', note:'高性价比；中转站常见平替目标' },
+  { id:'gpt-5.1',          name:'GPT-5.1',            vendor:'OpenAI',    livebench:72.6, swe:null, ctx:'400K', cutoff:'2025-08', tok:'o200k_base',  tier:'pro',      priceIn:1.25, priceOut:10.0, latency:'medium', note:'' },
+  { id:'gpt-5.1-codex',    name:'GPT-5.1 Codex',      vendor:'OpenAI',    livebench:69.3, swe:null, ctx:'400K', cutoff:'2025-10', tok:'o200k_base',  tier:'pro',      priceIn:1.25, priceOut:10.0, latency:'medium', note:'编程特化型号' },
+  { id:'glm-5.3',          name:'GLM-5.3',            vendor:'智谱',      livebench:60.7, swe:null, ctx:'1M',   cutoff:'2026-06', tok:'glm-class',   tier:'flagship', priceIn:0.6,  priceOut:2.2,  latency:'fast',    note:'开源；753B 总参数；AA 开源指数第 2' },
+  { id:'glm-5.2',          name:'GLM-5.2',            vendor:'智谱',      livebench:73.2, swe:null, ctx:'1M',   cutoff:'2026-03', tok:'glm-class',   tier:'flagship', priceIn:0.6,  priceOut:2.42, latency:'fast',    note:'旧榜快照；已被 5.3 接替' },
+  { id:'kimi-k2.6',        name:'Kimi K2.6',          vendor:'月之暗面',  livebench:72.4, swe:80.2, ctx:'262K', cutoff:'2026-02', tok:'deepseek-class', tier:'flagship', priceIn:0.6, priceOut:2.5, latency:'medium', note:'开源；Terminal-Bench 2 66.7%' },
+  { id:'grok-4.20',        name:'Grok 4.20',          vendor:'xAI',       livebench:69.0, swe:null, ctx:'1M',   cutoff:'2025-11', tok:'proprietary', tier:'pro',      priceIn:3.0,  priceOut:15.0, latency:'medium', note:'旧榜快照；已被 4.5/4.6/4.7 接替' },
+  { id:'doubao-seed-2.0-pro',name:'豆包 Seed 2.0 Pro',vendor:'字节',      livebench:63.5, swe:null, ctx:'256K', cutoff:'2026-01', tok:'proprietary', tier:'pro',      priceIn:0.3,  priceOut:0.9,  latency:'fast',    note:'OpenCompass 63.5' },
+
+  /* ===== 历史/小模型（旧榜快照或社区估算，est 标注） ===== */
+  { id:'gpt-4o',           name:'GPT-4o',             vendor:'OpenAI',    livebench:57.0, swe:33.0, ctx:'128K', cutoff:'2023-10', tok:'o200k_base',  tier:'legacy',   priceIn:2.5,  priceOut:10.0, latency:'fast',    note:'历史值；2024-10 曾为业界标杆', est:true },
+  { id:'gpt-3.5-turbo',    name:'GPT-3.5 Turbo',      vendor:'OpenAI',    livebench:38.0, swe:null, ctx:'16K',  cutoff:'2021-09', tok:'cl100k_base', tier:'legacy',   priceIn:0.5,  priceOut:1.5,  latency:'fast',    note:'历史估算值', est:true },
+  { id:'glm-4-9b',         name:'GLM-4-9B',           vendor:'智谱',      livebench:40.0, swe:null, ctx:'128K', cutoff:'2024-05', tok:'glm-class',   tier:'mini',     priceIn:0.05, priceOut:0.15, latency:'fast',    note:'CISPA 案例：冒充 GPT-5 的热门后端', est:true },
+  { id:'qwen2.5-72b',      name:'Qwen2.5-72B',        vendor:'阿里',      livebench:48.0, swe:null, ctx:'128K', cutoff:'2024-06', tok:'qwen-class',  tier:'mini',     priceIn:0.35, priceOut:0.4,  latency:'fast',    note:'开源模型，常见冒充后端', est:true },
+  { id:'llama-3.3-70b',    name:'Llama 3.3 70B',      vendor:'Meta',      livebench:52.0, swe:null, ctx:'128K', cutoff:'2023-12', tok:'llama-class', tier:'mini',     priceIn:0.23, priceOut:0.4,  latency:'fast',    note:'随机数指纹偏爱 53', est:true }
 ];
 MT.modelById = function (id) {
   id = String(id || '').toLowerCase();
@@ -52,22 +95,42 @@ MT.modelById = function (id) {
 MT.guessClaim = function (name) {
   var n = String(name || '').toLowerCase();
   var pairs = [
+    ['fable-5.1|fable5.1', 'claude-fable-5.1'], ['fable', 'claude-fable-5.1'],
+    ['opus-5.5|opus5.5|opus-5-5', 'claude-opus-5.5'],
+    ['opus-5|opus5', 'claude-opus-5'],
     ['opus-4-8|opus-4.8', 'claude-opus-4.8'], ['opus-4-7|opus-4.7', 'claude-opus-4.7'],
-    ['opus-4-5|opus-4.5', 'claude-opus-4.5'], ['opus', 'claude-opus-4.5'],
-    ['sonnet-4-6|sonnet-4.6', 'claude-sonnet-4.6'], ['sonnet', 'claude-sonnet-4.6'],
-    ['fable', 'claude-fable-5'],
+    ['opus-4-5|opus-4.5', 'claude-opus-4.5'], ['opus', 'claude-opus-5.5'],
+    ['sonnet-5.5|sonnet5.5|sonnet-5-5', 'claude-sonnet-5.5'],
+    ['sonnet-5|sonnet5', 'claude-sonnet-5'],
+    ['sonnet-4-6|sonnet-4.6', 'claude-sonnet-4.6'], ['sonnet', 'claude-sonnet-5.5'],
+    ['haiku-5.5|haiku5.5|haiku-5-5', 'claude-haiku-5.5'], ['haiku', 'claude-haiku-5.5'],
+    ['gpt-6.1|gpt6.1', 'gpt-6.1-sol'], ['gpt-6|gpt6', 'gpt-6-astra'],
+    ['gpt-5.6-sol|gpt5.6sol', 'gpt-5.6-sol'], ['gpt-5.6-terra', 'gpt-5.6-terra'], ['gpt-5.6-luna', 'gpt-5.6-luna'], ['gpt-5.6|gpt5.6', 'gpt-5.6-sol'],
     ['gpt-5.5|gpt5.5', 'gpt-5.5'], ['gpt-5.4|gpt5.4', 'gpt-5.4'], ['gpt-5.2|gpt5.2', 'gpt-5.2'],
-    ['gpt-5.1|gpt5.1', 'gpt-5.1'], ['gpt-5|gpt5', 'gpt-5.5'], ['gpt-4o', 'gpt-4o'],
-    ['gpt-3.5', 'gpt-3.5-turbo'], ['chatgpt', 'gpt-5.2'],
+    ['gpt-5.1-codex', 'gpt-5.1-codex'], ['gpt-5.1|gpt5.1', 'gpt-5.1'],
+    ['gpt-5|gpt5', 'gpt-5.5'], ['gpt-4o', 'gpt-4o'],
+    ['gpt-3.5', 'gpt-3.5-turbo'], ['chatgpt', 'gpt-5.5'],
+    ['gemini-4|gemini4', 'gemini-4-argon'],
+    ['gemini-3.8|gemini3.8', 'gemini-3.8-flash'], ['gemini-3.7|gemini3.7', 'gemini-3.7-flash'],
     ['gemini-3.1|gemini3.1', 'gemini-3.1-pro'], ['gemini-3.5|gemini3.5', 'gemini-3.5-flash'], ['gemini', 'gemini-3.1-pro'],
+    ['qwen3.8-flash|qwen3.8flash', 'qwen3.8-flash'], ['qwen3.8-27b', 'qwen3.8-27b'],
     ['qwen3.8|qwen-3.8', 'qwen3.8-max'], ['qwen3.7|qwen-3.7', 'qwen3.7-max'], ['qwen-max', 'qwen3.8-max'],
     ['qwen2.5', 'qwen2.5-72b'], ['qwen', 'qwen3.8-max'],
+    ['deepseek-v4-flash-vision', 'deepseek-v4-flash-vision'],
     ['deepseek-v4.1|deepseek-v4-1', 'deepseek-v4.1-flash'], ['deepseek-v4|deepseek-v4-pro', 'deepseek-v4-pro'], ['deepseek', 'deepseek-v4-pro'],
-    ['glm-5.3|glm5.3', 'glm-5.3'], ['glm-5.2|glm5.2', 'glm-5.2'], ['glm-4-9b', 'glm-4-9b'], ['glm', 'glm-5.3'],
-    ['kimi-k3|kimi-k-3', 'kimi-k3'], ['kimi-k2.6|kimi-k2-6', 'kimi-k2.6'], ['kimi', 'kimi-k2.6'],
-    ['grok', 'grok-4.20'], ['minimax', 'minimax-m3'], ['doubao|seed-2', 'doubao-seed-2.0-pro'],
+    ['glm-5.3-flash|glm5.3flash', 'glm-5.3-flash'], ['glm-5.3|glm5.3', 'glm-5.3'], ['glm-5.2|glm5.2', 'glm-5.2'], ['glm-4-9b', 'glm-4-9b'], ['glm', 'glm-5.3'],
+    ['kimi-k3|kimi-k-3', 'kimi-k3'], ['kimi-k2.6|kimi-k2-6', 'kimi-k2.6'], ['kimi', 'kimi-k3'],
+    ['grok-4.7|grok4.7', 'grok-4.7'], ['grok-4.6|grok4.6', 'grok-4.6'], ['grok-4.5|grok4.5', 'grok-4.5'], ['grok-4.20|grok4.20', 'grok-4.20'], ['grok', 'grok-4.7'],
+    ['muse-wonder|musewonder|muse-wonder-1', 'muse-wonder-1.0'],
+    ['muse-spark-open', 'muse-spark-open'], ['muse-spark-1.3|musespark1.3', 'muse-spark-1.3'], ['muse-spark-1.2', 'muse-spark-1.2'], ['muse', 'muse-wonder-1.0'],
+    ['mimo-v2.6-pro|mimov2.6|mimo-v2.6', 'mimo-v2.6-pro'], ['mimo', 'mimo-v2.6-pro'],
+    ['step-5|step5', 'step-5'], ['step', 'step-5'],
+    ['nemotron-3.5-super', 'nemotron-3.5-super-vl'], ['nemotron-3-ultra', 'nemotron-3-ultra'], ['nemotron-3.5-lightning', 'nemotron-3.5-lightning'], ['nemotron', 'nemotron-3.5-super-vl'],
+    ['gemma-4|gemma4', 'gemma-4-31b'], ['gemma', 'gemma-4-31b'],
+    ['mistral-large-4|mistral-large', 'mistral-large-4'], ['mistral', 'mistral-large-4'],
+    ['minimax', 'minimax-m3'], ['doubao|seed-2', 'doubao-seed-2.0-pro'],
     ['llama-3.3|llama3.3', 'llama-3.3-70b'], ['llama', 'llama-3.3-70b']
-  ];
+  ]
   for (var i = 0; i < pairs.length; i++) {
     var re = new RegExp(pairs[i][0], 'i');
     if (re.test(n)) return MT.modelById(pairs[i][1]);
