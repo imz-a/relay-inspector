@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>照妖镜 · API 中转站掺水检测站 — 模型指纹鉴定 / 掺水指数 / 能力对比</title>
+<meta name="description" content="基于 CISPA LLMmap、One Token Is Enough 行为指纹、tokwhois 词表指纹等权威方法，检测 API 中转站是否掺水：12 项检测、掺水指数、实际后端模型鉴定、能力雷达对比。密钥仅在浏览器本地使用。">
+<meta name="keywords" content="API中转站检测,模型掺水,LLM指纹,模型偷换检测,中转站降智,tokenizer指纹,照妖镜">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="照妖镜 · API 中转站掺水检测站">
+<meta property="og:description" content="用权威模型指纹技术，看清你的中转站 API 背后到底跑的是什么模型。">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">🔍</span>
+    照妖镜 <small>API 中转站掺水检测站</small>
+  </div>
+  <nav class="site-nav" aria-label="页面导航">
+    <a href="#config">接入配置</a>
+    <a href="#matrix">检测矩阵</a>
+    <a href="#report">综合报告</a>
+    <a href="#records">检测记录</a>
+    <a href="#baseline">模型基线库</a>
+    <a href="#method">方法论</a>
+  </nav>
+  <button class="btn-demo" id="btnDemo" type="button">▶ 演示模式</button>
+</header>
+
+<main>
+
+  <!-- ================= Hero ================= -->
+  <section class="hero" aria-labelledby="heroTitle">
+    <h1 id="heroTitle">你的中转站 API，<br>真的在跑<span class="grad">你付费的那个模型</span>吗？</h1>
+    <p class="sub">
+      2026 年 3 月，德国 CISPA 审计 17 家中转站，<b>45.83% 未通过模型指纹校验</b>；被冒充最多的是
+      Claude Opus 与 GPT-5 系列。本站汇总学术界与工业界最权威的掺水检测方法——模型指纹、词表指纹、
+      行为指纹、能力底线、大海捞针、知识截止探测——在你自己的浏览器里直连目标端点完成全部检测，
+      API Key 不经过任何第三方服务器。
+    </p>
+    <div class="hero-stats">
+      <div class="stat-chip"><b class="red">45.83%</b><span>CISPA 审计 17 家中转站的指纹失败率（arXiv:2603.01919）</span></div>
+      <div class="stat-chip"><b class="green">92.7%</b><span>「One Token Is Enough」行为指纹鉴定准确率（165 模型 / 32.6 万次请求）</span></div>
+      <div class="stat-chip"><b>14+12</b><span>项检测能力：词表指纹 14 探针 + 12 大检测模块交叉验证</span></div>
+    </div>
+  </section>
+
+  <!-- ================= 配置 ================= -->
+  <section id="config" aria-labelledby="cfgTitle">
+    <div class="sec-head">
+      <div class="sec-kicker">Step 1 / 接入</div>
+      <h2 id="cfgTitle">接入待检测端点</h2>
+      <p>支持任意 OpenAI 兼容或 Anthropic 兼容端点（市面上 95% 以上的中转站均提供 OpenAI 兼容接口）。所有请求由你的浏览器直接发往该端点。</p>
+    </div>
+    <div class="panel">
+      <div class="cfg-grid">
+        <div class="field">
+          <label for="baseUrl">API Base URL <span class="req">*</span></label>
+          <input id="baseUrl" type="url" placeholder="https://your-relay.example.com/v1" autocomplete="off" spellcheck="false">
+          <div class="hint">填到 /v1 为止，无需带 /chat/completions</div>
+        </div>
+        <div class="field">
+          <label for="apiKey">API Key <span class="req">*</span></label>
+          <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false">
+          <div class="hint">🔒 仅存于当前浏览器内存，不写入 localStorage、不上传任何服务器</div>
+        </div>
+        <div class="field">
+          <label for="modelName">声称的模型名称 <span class="req">*</span></label>
+          <input id="modelName" type="text" placeholder="claude-opus-4-8 / gpt-5.5 / deepseek-v4-pro" autocomplete="off" spellcheck="false">
+          <div class="hint">按中转站商品页/模型列表里标注的名字填写，用于能力基线对比</div>
+        </div>
+        <div class="field">
+          <label>接口协议</label>
+          <div class="seg" id="protocolSeg" data-value="openai" role="group" aria-label="接口协议">
+            <button type="button" data-v="openai" class="on">OpenAI 兼容</button>
+            <button type="button" data-v="anthropic">Anthropic 兼容</button>
+          </div>
+          <div class="hint">Anthropic 协议下将调用 /v1/messages</div>
+        </div>
+        <div class="field">
+          <label for="temperature">随机数探测温度（T4 使用）</label>
+          <input id="temperature" type="number" min="0" max="2" step="0.1" value="1">
+          <div class="hint">行为指纹需要采样多样性，推荐 1.0；端点不支持该参数时自动退回默认</div>
+        </div>
+      </div>
+
+      <div class="cfg-actions">
+        <button class="btn btn-primary" id="btnTestConn" type="button">⚡ 测试连接</button>
+        <button class="btn btn-primary" id="btnRunAll" type="button">▶ 运行全部检测</button>
+        <button class="btn btn-ghost" id="btnShowReport" type="button">📊 查看综合报告</button>
+        <span class="cost-estimate" id="costEstimate">估算中…</span>
+      </div>
+
+      <div class="run-all-bar">
+        <span class="ptext" id="runPtext">0/12</span>
+        <div class="progress"><i id="runProgress" value="0"></i></div>
+      </div>
+      <div class="log-box" id="logBox" role="log" aria-live="polite"></div>
+
+      <details class="adv">
+        <summary>⚙️ 高级设置：配置「参考端点」做差分指纹比对（最可靠）</summary>
+        <div class="cfg-grid">
+          <div class="field field-wide" style="grid-column:1/-1">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="useRef" style="width:auto">
+              <span>启用参考端点（官方 API 或你信任的同模型端点）。启用后 T2 词表指纹将做差分比对，准确率最高。</span>
+            </label>
+          </div>
+          <div class="field">
+            <label for="refBaseUrl">参考端点 Base URL</label>
+            <input id="refBaseUrl" type="url" placeholder="https://api.openai.com/v1" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="refApiKey">参考端点 Key</label>
+            <input id="refApiKey" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="refModel">参考端点模型名</label>
+            <input id="refModel" type="text" placeholder="与声称模型相同的官方模型名" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label>参考端点协议</label>
+            <div class="seg" id="refProtocolSeg" data-value="openai" role="group" aria-label="参考端点协议">
+              <button type="button" data-v="openai" class="on">OpenAI 兼容</button>
+              <button type="button" data-v="anthropic">Anthropic 兼容</button>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="adv">
+        <summary>☁️ 检测记录同步：把每次检测结果保存到 GitHub 仓库</summary>
+        <div class="cfg-grid">
+          <div class="field">
+            <label for="ghOwner">仓库拥有者</label>
+            <input id="ghOwner" type="text" placeholder="imz-a" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="ghRepo">仓库名</label>
+            <input id="ghRepo" type="text" placeholder="relay-inspector" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="ghBranch">分支</label>
+            <input id="ghBranch" type="text" placeholder="main" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="ghToken">Access Token（写入用）</label>
+            <input id="ghToken" type="password" placeholder="github_pat_... 或 ghp_..." autocomplete="off" spellcheck="false">
+            <div class="hint">fine-grained PAT 勾选「Contents: Read and write」即可；浏览记录无需 Token</div>
+          </div>
+          <div class="field">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="ghRemember" style="width:auto">
+              <span>在本机记住 Token（localStorage）</span>
+            </label>
+          </div>
+          <div class="field">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="ghAutoSave" style="width:auto" checked>
+              <span>全量检测完成后自动保存记录</span>
+            </label>
+          </div>
+        </div>
+        <div class="cfg-actions" style="margin-top:14px">
+          <button class="btn btn-primary" id="btnGhSave" type="button">保存 GitHub 配置</button>
+          <span id="ghStatus" style="font-size:12px;color:var(--text-2)"></span>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================= 检测矩阵 ================= -->
+  <section id="matrix" aria-labelledby="mxTitle">
+    <div class="sec-head">
+      <div class="sec-kicker">Step 2 / 检测</div>
+      <h2 id="mxTitle">12 维检测矩阵</h2>
+      <p>每项检测对应一类掺水手法，可单独运行。全量运行约需 5-15 分钟（取决于端点速度），期间请保持页面打开。检测会真实消耗 token，开始前请查看上方成本估算。</p>
+    </div>
+    <div class="test-grid" id="testGrid"></div>
+  </section>
+
+  <!-- ================= 综合报告 ================= -->
+  <section id="report" aria-labelledby="rpTitle">
+    <div class="sec-head">
+      <div class="sec-kicker">Step 3 / 报告</div>
+      <h2 id="rpTitle">综合掺水报告</h2>
+      <p>加权掺水指数（0-100）、结论分级、实际后端模型鉴定、能力雷达对比与成本账。全部计算在你的浏览器本地完成。</p>
+    </div>
+    <div id="reportEmpty" class="panel" style="text-align:center;color:var(--text-2);padding:44px">
+      尚未生成报告。请先「运行全部检测」（或点击右上角 <b style="color:var(--accent)">▶ 演示模式</b> 查看一份真实掺水案例的报告）。
+    </div>
+    <div id="reportBody"></div>
+    <div class="cfg-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" id="btnExport" type="button">💾 导出报告（Markdown + JSON）</button>
+      <button class="btn btn-ghost" id="btnSaveRecord" type="button">☁️ 保存记录到 GitHub</button>
+    </div>
+  </section>
+
+  <!-- ================= 检测记录 ================= -->
+  <section id="records" aria-labelledby="rcTitle">
+    <div class="sec-head">
+      <div class="sec-kicker">History / 记录</div>
+      <h2 id="rcTitle">检测记录</h2>
+      <p>每一次全量检测的结果都会写入 GitHub 仓库的 <b>records/</b> 目录：同一中转站 + 同一声称模型的相同结论不会重复记录，而任何结论变化（后端被更换、掺水指数跨档）都会作为新记录保留。下表直接从你的仓库读取。</p>
+    </div>
+    <div id="recordsBody"></div>
+  </section>
+
+  <!-- ================= 基线库 ================= -->
+  <section id="baseline" aria-labelledby="blTitle">
+    <div class="sec-head">
+      <div class="sec-kicker">Reference / 基线</div>
+      <h2 id="blTitle">官方模型能力基线库</h2>
+      <p>各旗舰模型的公开基准分（LiveBench / SWE-bench Verified / SuperCLUE / OpenCompass，2026-10 快照）、上下文窗口、知识截止时间与词表家族。检测报告的「能力对比」以此为准。标注 est 的为社区估算值。</p>
+    </div>
+    <div class="base-toolbar">
+      <input id="baseSearch" type="search" placeholder="搜索模型 / 厂商，如 GPT、Claude、DeepSeek…" aria-label="搜索模型">
+      <select id="baseTier" aria-label="按档位筛选">
+        <option value="">全部档位</option>
+        <option value="flagship">旗舰</option>
+        <option value="pro">高端</option>
+        <option value="mini">轻量</option>
+        <option value="legacy">过时</option>
+      </select>
+    </div>
+    <div class="table-wrap" id="baseTable"></div>
+  </section>
+
+  <!-- ================= 方法论 ================= -->
+  <section id="method" aria-labelledby="mdTitle">
+    <div class="sec-head">
+      <div class="sec-kicker">Methodology / 方法论</div>
+      <h2 id="mdTitle">本站采用的权威检测方法</h2>
+      <p>没有单一探针是完美的——中转站可以针对性绕过任何单项测试。本站的方法论核心是<b>多信号交叉验证</b>：单项异常只作提示，多项独立信号同时指向同一结论才下判定。</p>
+    </div>
+    <div class="method-grid" id="methodGrid"></div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="mini-title">局限性与诚实声明</div>
+      <ul style="font-size:13.5px;color:var(--text-2);padding-left:20px;line-height:2">
+        <li>约 <b style="color:var(--amber)">38%</b> 的偷换行为能通过第一层简单探针（CISPA 数据），只有分层组合探针才能暴露——因此请以全量检测结果为准，单项「正常」不代表整站干净。</li>
+        <li>「按流量分流」型中转站（高峰期才切换、长上下文才切换）需要<b style="color:var(--amber)">每周复测</b>才能捕捉，单次全绿不等于永久安全。</li>
+        <li>行为指纹参考库不可能覆盖全部 165+ 模型；遇到「与参考库均有距离」的结果时，本站会明确报告「不明确」而不会强行猜测。</li>
+        <li>Claude / Gemini 等无公开词表的模型，单端点词表判别意义有限，请配置参考端点做差分比对。</li>
+        <li>本工具只检测「你拿到的回复像不像声称的模型」，不判定商业欺诈意图；检测结论仅供维权与选型参考。</li>
+      </ul>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="mini-title">参考文献与开源项目</div>
+      <div class="ref-list">
+        <a href="https://arxiv.org/pdf/2603.01919" target="_blank" rel="noopener">[1] CISPA Helmholtz《Real Money, Fake Models: Deceptive Model Claims in Shadow APIs》arXiv:2603.01919（2026-03）</a>
+        <a href="https://arxiv.org/abs/2606.04101" target="_blank" rel="noopener">[2] T. Bruckner《One Token Is Enough: Detecting Model Substitution via Behavioral Fingerprints》arXiv:2606.04101（2026-07）</a>
+        <a href="https://github.com/fasuizu-br/tokwhois" target="_blank" rel="noopener">[3] tokwhois — 14 探针 tokenizer 家族识别（Apache-2.0，catalog v1.1 / 2026-08-27）</a>
+        <a href="https://zenodo.org/records/21278557" target="_blank" rel="noopener">[4] Bruckner 论文数据与代码（Zenodo 21278557）</a>
+        <a href="https://tsecurity.de/de/3680076/sichere-programmierung/your-cheap-llm-relay-might-be-swapping-the-model-heres-how-to-catch-it/" target="_blank" rel="noopener">[5] TSecurity《Your cheap LLM relay might be swapping the model》五信号检测法</a>
+        <a href="https://github.com/cylqwe7855-alt/llm-api-benchmark-skill" target="_blank" rel="noopener">[6] llm-api-benchmark-skill — 726 题公开基准加权评分（实测某 2.0 倍率 Opus 中转站 51.55 分 &lt; DeepSeek-V4-Pro 66.76）</a>
+        <a href="https://relaylens.dev" target="_blank" rel="noopener">[7] Relaylens — 服务器签名验证 + 行为指纹 + 上下文探测</a>
+        <a href="https://xtokenchecker.com" target="_blank" rel="noopener">[8] XTokenChecker — 零知识架构的网关验证工具（词表差值 / 行为指纹 / 上下文校验）</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div><b>照妖镜 · API 中转站掺水检测站</b> — 静态单页应用，可离线部署</div>
+  <div>零知识架构：API Key 仅在你的浏览器内存中使用，不写入 Cookie / localStorage，不发送至任何第三方；所有检测请求直达你配置的端点。</div>
+  <div>方法论综合 CISPA / 布拉格经济大学 / tokwhois / TSecurity 等公开研究 · 检测结论仅供选型参考，不构成法律证据</div>
+</footer>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/data.js"></script>
+<script src="js/demo.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/gh.js"></script>
+<script src="js/tests.js"></script>
+<script src="js/report.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
