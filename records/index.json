@@ -1,0 +1,26 @@
+{
+  "v": 1,
+  "repo": "imz-a/relay-inspector",
+  "updated": "2026-10-18T04:00:00.000Z",
+  "count": 1,
+  "records": [
+    {
+      "v": 1,
+      "id": "sample",
+      "sample": true,
+      "ts": "2026-10-18T04:00:00.000Z",
+      "host": "example-relay.com",
+      "baseUrl": "https://example-relay.com/v1",
+      "model": "claude-opus-4-8",
+      "protocol": "openai",
+      "verdict": "fake",
+      "verdictLabel": "高度假冒",
+      "index": 62.3,
+      "identified": "GLM-4-9B",
+      "identifiedPct": 99,
+      "testsRun": "12/12",
+      "claim": "Claude Opus 4.8",
+      "detailFile": null
+    }
+  ]
+}
